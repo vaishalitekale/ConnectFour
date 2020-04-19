@@ -1,17 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 
-
 @Component({
   selector: 'app-connect-four',
   templateUrl: './connect-four.component.html',
   styleUrls: ['./connect-four.component.css']
 })
 export class ConnectFourComponent implements OnInit {
-  private rowCount = 5;
-  private columnCount = 6;
-  private rowData = [1,2,3,4,5,6];
-  private columnData = [1,2,3,4,5,6,7];
+  private rowData = [0,0,0,0,0,0];
+  private columnData = [0,0,0,0,0,0,0];
+  private maxMoves: Number = 42;
   private currentPlayer = 'Player1';
+  private finalResult = '';
   private winnerFlag: boolean = false;
   private Player1Obj = [];
   private Player2Obj = [];
@@ -23,9 +22,10 @@ export class ConnectFourComponent implements OnInit {
 
   setColor(columnIndex) {
     //calculate horizontalIndex
-    let count = 0;
+    let rowIndex = 0;
+    this.finalResult='';
     if(this.Player1Obj.length === 0 && this.Player2Obj.length === 0 ) {
-      count = this.rowCount;
+      rowIndex = this.rowData.length - 1;
     } else {
       const player1Count = this.Player1Obj.filter(function(player1) { 
         return player1.verticalIndex == columnIndex 
@@ -33,11 +33,11 @@ export class ConnectFourComponent implements OnInit {
       const player2Count = this.Player2Obj.filter(function(player2) { 
         return player2.verticalIndex == columnIndex 
       }).length;
-      count = this.rowCount - (player1Count + player2Count);
+      rowIndex = (this.rowData.length - 1) - (player1Count + player2Count);
     }
-    
+
     const obj = {
-      'horizontalIndex': count,
+      'horizontalIndex': rowIndex,
       'verticalIndex': columnIndex
     }
     if (this.currentPlayer === 'Player1') {
@@ -46,10 +46,10 @@ export class ConnectFourComponent implements OnInit {
       this.Player2Obj.push(obj);
     }
     // set color according to Player
-    this.checkStyles(count, columnIndex);
+    this.checkStyles(rowIndex, columnIndex); 
 
     // check if any one wins
-    this.checkWinner(count);
+    this.checkWinner(rowIndex);
 
     // set Player for next turn
     this.currentPlayer = this.setPlayer(this.currentPlayer);
@@ -58,11 +58,13 @@ export class ConnectFourComponent implements OnInit {
   checkStyles(rowIndex, columnIndex) { 
     const player1Found = this.Player1Obj.findIndex((x: any) => x.horizontalIndex === rowIndex && x.verticalIndex === columnIndex);
     const player2Found = this.Player2Obj.findIndex((x: any) => x.horizontalIndex === rowIndex && x.verticalIndex === columnIndex);
-    const element = document.getElementById(rowIndex+'-'+columnIndex);
+    const element = (<HTMLInputElement>document.getElementById(rowIndex+'-'+columnIndex));
     if (player1Found === -1 && player2Found !== -1) {
-      element.setAttribute("class", 'dot player2Dot');
+      element.style.animation = 'player2 0.3s';
+      element.setAttribute("class", 'baseIndicator player2Indicator');
     } else {
-      element.setAttribute("class", 'dot player1Dot');
+      element.style.animation = 'player1 0.3s';
+      element.setAttribute("class", 'baseIndicator player1Indicator');
     }
   }
  
@@ -70,26 +72,26 @@ export class ConnectFourComponent implements OnInit {
     return currentPlayer === 'Player1' ? 'Player2' : 'Player1';
   }
 
-  changeState() {
-    this.currentPlayer = this.currentPlayer === 'initial' ? 'final' : 'initial';
-  }
-  
   checkWinner(rowIndex: number) {
-    let hasWinner = false;
     const finalObj = this.currentPlayer === 'Player1' ? this.Player1Obj : this.Player2Obj;
     // find horizontal
     if ( this.checkHorizontal(finalObj) || this.checkDiagonalWin(finalObj, rowIndex) || this.checkVertical(finalObj) ){
-      
-        alert('Winner is'+this.currentPlayer);
+        this.finalResult = 'Winner is ' + this.currentPlayer;
         this.resetGame();
+    } else {
+      // check if no one wins 
+      if (this.checkMatchDraw()) {
+          this.finalResult = 'Match Draw, Play Again';
+          this.resetGame();
+      }
     }
   }
 
   checkHorizontal(finalObj: any) { 
     let consecutiveMoves = 0;
     const countToWin = 4;
-    for (let rowIndex = this.rowCount; rowIndex >= 0; rowIndex--) {
-      for (let columnIndex = 0; columnIndex <= this.columnCount; columnIndex++) {
+    for (let rowIndex = (this.rowData.length - 1); rowIndex >= 0; rowIndex--) {
+      for (let columnIndex = 0; columnIndex < this.columnData.length; columnIndex++) {
         const checkEntry = finalObj.findIndex((x: any) => x.horizontalIndex === rowIndex && x.verticalIndex === columnIndex);
         if (checkEntry !== -1) {
           consecutiveMoves += 1;
@@ -113,8 +115,8 @@ export class ConnectFourComponent implements OnInit {
   checkVertical(finalObj: any) { 
     let consecutiveMoves = 0;
     const countToWin = 4;
-    for (let columnIndex = 0; columnIndex <= this.columnCount; columnIndex++) {
-      for (let rowIndex = this.rowCount; rowIndex >= 0; rowIndex--) {
+    for (let columnIndex = 0; columnIndex < this.columnData.length; columnIndex++) {
+      for (let rowIndex = (this.rowData.length - 1); rowIndex >= 0; rowIndex--) {
         const checkEntry = finalObj.findIndex((x: any) => x.horizontalIndex === rowIndex && x.verticalIndex === columnIndex);
         if (checkEntry !== -1) {
           consecutiveMoves += 1;
@@ -141,7 +143,7 @@ export class ConnectFourComponent implements OnInit {
     const minRowIndex = 2;
     // check right diagonal
     
-      for (let indexRow = this.rowCount; indexRow >= minRowIndex; indexRow--) {
+      for (let indexRow = (this.rowData.length - 1); indexRow >= minRowIndex; indexRow--) {
         if (!this.winnerFlag) {
         const foundObj = finalObj.filter((x: any) => x.horizontalIndex === indexRow);
         foundObj.forEach(objFound => {
@@ -153,8 +155,6 @@ export class ConnectFourComponent implements OnInit {
             const checkEntry = finalObj.findIndex((x: any) => x.horizontalIndex === rowIndex && x.verticalIndex === columnIndex);
             if (checkEntry !== -1) {
               consecutiveMoves += 1;
-              console.log('index', rowIndex, columnIndex);
-              console.log('consecutiveMoves', consecutiveMoves);
               if (consecutiveMoves === countToWin) {
                 this.winnerFlag = true;
               }
@@ -172,7 +172,7 @@ export class ConnectFourComponent implements OnInit {
         }
     }
     // check diagonal on other side
-      for (let indexRow = this.rowCount; indexRow >= minRowIndex; indexRow--) {
+      for (let indexRow = (this.rowData.length - 1); indexRow >= minRowIndex; indexRow--) {
         if (!this.winnerFlag) {
         const foundObj = finalObj.filter((x: any) => x.horizontalIndex === indexRow);
         foundObj.some(objFound => {
@@ -206,11 +206,15 @@ export class ConnectFourComponent implements OnInit {
     this.Player2Obj = [];
     this.winnerFlag = false;
     this.currentPlayer = 'Player1';
-    for (let columnIndex = 0; columnIndex <= this.columnCount; columnIndex++) {
-      for (let rowIndex = 0; rowIndex <= this.rowCount; rowIndex++) {
-        const element = document.getElementById(rowIndex+'-'+columnIndex);
-          element.setAttribute("class", 'dot');
+    for (let columnIndex = 0; columnIndex < this.columnData.length; columnIndex++) {
+      for (let rowIndex = 0; rowIndex < this.rowData.length; rowIndex++) {
+        const element = (<HTMLInputElement>document.getElementById(rowIndex+'-'+columnIndex));
+          element.setAttribute("class", 'baseIndicator');
       }
     }
+  }
+  checkMatchDraw() {
+    const matchDraw = this.Player1Obj.length + this.Player2Obj.length;
+    return matchDraw === this.maxMoves ? true : false;
   }
 }

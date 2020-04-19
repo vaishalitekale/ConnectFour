@@ -8,18 +8,33 @@
     margin-top: 3%;
 }
 
-.dot {
+.baseIndicator {
     height: 40px;
     width: 40px;
     background-color: #ffffff;
     border-radius: 50%;
     display: inline-block;
+    position: relative;
+    animation-fill-mode: forwards;
 }
 
-.player1Dot {
+.player1Indicator {
     background-color: #ff0000;
 }
 
-.player2Dot {
+.player2Indicator {
     background-color: #ffff00;
+}
+.btnCenter {
+    margin-left:40%;
+}
+  
+@keyframes player1 {
+    from {top: -200px;}
+    to {top: 0px; background-color: #ff0000;}
+}
+
+@keyframes player2 {
+    from {top: -200px;}
+    to {top: 0px; background-color: #ffff00;}
 }
