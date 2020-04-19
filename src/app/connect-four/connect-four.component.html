@@ -1,0 +1,16 @@
+
+<div class="container">
+    <h1 class="">Connect Four</h1>
+    <div class="row">
+        <p>Player1: </p> <span class="dot player1Dot"></span>
+        <p>Player2: </p> <span class="dot player2Dot"></span>
+    </div>
+    <div class = "board">
+        <div class="row" *ngFor="let rowCount of rowData; let rowIndex= 'index'">
+            <div class="col" *ngFor="let columnCount of columnData; let columnIndex='index'">
+                <span class="dot"  id ="{{rowIndex}}-{{columnIndex}}" (click) = "setColor(columnIndex )"></span>
+            </div>
+        </div>
+    </div>
+    <button (click)="resetGame()" class="btn btn-primary">Reset Game</button>
+</div>

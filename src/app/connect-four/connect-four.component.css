@@ -1,0 +1,25 @@
+.board {
+    background-color: lightgrey;
+    padding: 5px;
+    padding-bottom: 10px;
+    width: 473px;
+    border-radius: 3%;
+    margin-left: 25%;
+    margin-top: 3%;
+}
+
+.dot {
+    height: 40px;
+    width: 40px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.player1Dot {
+    background-color: #ff0000;
+}
+
+.player2Dot {
+    background-color: #ffff00;
+}
